@@ -65,7 +65,7 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	// GetOwner()->SetActorRotation(OpenDoor);																// Which then gets set as the actor's new rotation
 
 	// Better implementation //
-	UE_LOG(LogTemp, Warning, TEXT("Yaw is: %f"), GetOwner()->GetActorRotation().Yaw);
+	//UE_LOG(LogTemp, Warning, TEXT("Yaw is: %f"), GetOwner()->GetActorRotation().Yaw);
 	CurrentYaw = FMath::Lerp(CurrentYaw, OpenAngle, DoorOpenSpeed * DeltaTime);								// Current yaw is set each frame to a new value that eventually reaches the desired OpenAngle, 
 	//																										// ALSO we multiple by Delta time to make the change over time independent from frame rates so the velocity is constant on slow and fast PCS
 
@@ -76,7 +76,7 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 
 void UOpenDoor::CloseDoor(float DeltaTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Door is closing"));
+	//UE_LOG(LogTemp, Warning, TEXT("Door is closing"));
 	CurrentYaw = FMath::Lerp(CurrentYaw, InitialYaw, DoorCloseSpeed * DeltaTime);							// Same code as OpenDoor, but instead of lerping to OpenAngle, we go back to InitialYaw.
 
 	FRotator DoorRotation = GetOwner()->GetActorRotation();													
