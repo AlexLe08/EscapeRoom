@@ -22,10 +22,34 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-
 	//UE_LOG(LogTemp, Warning, TEXT("Got the grabber"));
+
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();																//Check for physics handle component
+	if (!PhysicsHandle)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Physics Handle component on this object: %s"), *GetOwner()->GetName());
+	}
+
+	
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();																		//Check for input (should never be missing but who knows)
+	if (InputComponent)
+	{
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);																	// When the input is pressed then "this" Grabber component will run the function Grab (&UGrabber::Grab returns the address of this function)
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::ReleaseGrab);																	
+	}
 	
 }
+
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab has been pressed"));
+}
+
+void UGrabber::ReleaseGrab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab has been released"));
+}
+
 
 
 // Called every frame
@@ -45,7 +69,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	// *PlayerViewPointLocation.ToString(), 
 	// *PlayerViewPointRotation.ToString());
 
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;													// Our ray trace end distance, starting from PlayerViewPointLocation ane ending wherever the player would look at (rotation * reach)
 
 	DrawDebugLine(
 		GetWorld(),
@@ -61,7 +85,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	FHitResult Hit;
 	FCollisionQueryParams TraceParams(FName(TEXT(" ")), false, GetOwner());
 
-	// Raycast out to a distance (Reach)
+	// Raycast out to a distance (Reach)																										// Trace a ray against the world using object type (4th argument) and return the first blocking Hit
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
 		PlayerViewPointLocation,
@@ -71,10 +95,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		);
 
 	AActor* ActorHit = Hit.GetActor();
-	if(ActorHit)
-	{
-	UE_LOG(LogTemp, Error, TEXT("This actor has been hit: %s"), *(ActorHit)->GetName());
-	}
+	//if(ActorHit)
+	// {
+	// UE_LOG(LogTemp, Error, TEXT("This actor has been hit: %s"), *(ActorHit)->GetName());
+	// }
 
 
 
