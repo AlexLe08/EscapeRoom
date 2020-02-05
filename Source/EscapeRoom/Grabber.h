@@ -37,6 +37,7 @@ private:
 
 	FHitResult GetFirstPhysicsBodyInReach() const;
 
-	FVector GetLineTraceEnd();
+	FVector GetLineTraceEnd() const;
 
+	FVector GetPlayerWorldPos() const;
 };

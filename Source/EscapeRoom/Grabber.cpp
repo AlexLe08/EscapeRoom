@@ -48,9 +48,7 @@ void UGrabber::SetupInputComponent()
 
 void UGrabber::Grab()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Grab has been pressed"));
-
-	FVector LineTraceEnd = GetLineTraceEnd();
+	//UE_LOG(LogTemp, Warning, TEXT("Grab has been pressed"));
 
 	// try and reach any actors with physics body collision channel set
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
@@ -62,7 +60,7 @@ void UGrabber::Grab()
 		PhysicsHandle->GrabComponentAtLocation(
 			ComponentToGrab,
 			NAME_None,
-			LineTraceEnd
+			GetLineTraceEnd()
 		);		
 	}
 	
@@ -71,29 +69,12 @@ void UGrabber::Grab()
 
 void UGrabber::ReleaseGrab()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Grab has been released"));
+	//UE_LOG(LogTemp, Warning, TEXT("Grab has been released"));
 
 	// Remove physics handle upon release
 	PhysicsHandle->ReleaseComponent();
 }
 
-FVector UGrabber::GetLineTraceEnd()
-{
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(																					// Notice here that I put the arguments down on a new line, which looks like I interrupted the code,
-		OUT PlayerViewPointLocation, 																											// But this is fine to do for the sake of readability without affecting the code.
-		OUT PlayerViewPointRotation);																											// Macro at work; its here to tell us that those 2 variables will be edited by the function; 
-																																				// useful since the function returns nothing obvious
-
-	// UE_LOG(LogTemp, Warning, TEXT("GetPlayerViewPoint is at work: Location being %s and Rotation being %s"), 
-	// *PlayerViewPointLocation.ToString(), 
-	// *PlayerViewPointRotation.ToString());
-
-	 FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;												// Our ray trace end distance, starting from PlayerViewPointLocation ane ending wherever the player would look at (rotation * reach)
-
-	return LineTraceEnd;
-}
 
 
 // Called every frame
@@ -101,31 +82,14 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FVector LineTraceEnd = GetLineTraceEnd();
-
-	if (PhysicsHandle->GrabbedComponent)
+	if (PhysicsHandle->GrabbedComponent)																										// If physics handle is attached, it is an object that can be grabbed
 	{
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		PhysicsHandle->SetTargetLocation(GetLineTraceEnd());
 	}
-	
-
 }
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(																					// Notice here that I put the arguments down on a new line, which looks like I interrupted the code,
-		OUT PlayerViewPointLocation, 																											// But this is fine to do for the sake of readability without affecting the code.
-		OUT PlayerViewPointRotation);																											// Macro at work; its here to tell us that those 2 variables will be edited by the function; 
-																																				// useful since the function returns nothing obvious
-
-	// UE_LOG(LogTemp, Warning, TEXT("GetPlayerViewPoint is at work: Location being %s and Rotation being %s"), 
-	// *PlayerViewPointLocation.ToString(), 
-	// *PlayerViewPointRotation.ToString());
-
-	 FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;												// Our ray trace end distance, starting from PlayerViewPointLocation ane ending wherever the player would look at (rotation * reach)
-
 	// DrawDebugLine(																															// These are just for debugging purposes
 	// 	GetWorld(),
 	// 	PlayerViewPointLocation,
@@ -143,20 +107,45 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 	// Raycast out to a distance (Reach)																										// Trace a ray against the world using object type (4th argument) and return the first blocking Hit
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
-		PlayerViewPointLocation,
-		LineTraceEnd,
+		GetPlayerWorldPos(),
+		GetLineTraceEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParams
 		);
 
-	AActor* ActorHit = Hit.GetActor();
-	if (ActorHit)
-	 {
-	 UE_LOG(LogTemp, Error, TEXT("This actor has been hit: %s"), *(ActorHit)->GetName());
-	 }
-
-
+	// AActor* ActorHit = Hit.GetActor();																										// Debug lines; what is the hit result?
+	// if (ActorHit)
+	//  {
+	//  UE_LOG(LogTemp, Error, TEXT("This actor has been hit: %s"), *(ActorHit)->GetName());
+	//  }																																		// 
 
 	return Hit;
 }
 
+FVector UGrabber::GetPlayerWorldPos() const
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(																					// Almost exactly the same code as below; the difference is the return value
+		OUT PlayerViewPointLocation, 																											
+		OUT PlayerViewPointRotation);																											
+
+	return PlayerViewPointLocation;
+
+}
+
+FVector UGrabber::GetLineTraceEnd() const
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(																					// Notice here that I put the arguments down on a new line, which looks like I interrupted the code,
+		OUT PlayerViewPointLocation, 																											// But this is fine to do for the sake of readability without affecting the code.
+		OUT PlayerViewPointRotation);																											// Macro at work; its here to tell us that those 2 variables will be edited by the function; 
+																																				// useful since the function returns nothing obvious
+	// Debugging line
+	// UE_LOG(LogTemp, Warning, TEXT("GetPlayerViewPoint is at work: Location being %s and Rotation being %s"), 
+	// *PlayerViewPointLocation.ToString(), 
+	// *PlayerViewPointRotation.ToString());
+
+	return PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;																	// Our ray trace end distance, starting from PlayerViewPointLocation ane ending wherever the player would look at (rotation * reach)
+}
