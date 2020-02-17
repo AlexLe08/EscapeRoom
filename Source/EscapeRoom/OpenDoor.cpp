@@ -122,7 +122,7 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 
 float UOpenDoor::TotalMassOfActors() const																	// Returns the total mass of all actors that overlap the pressure plate
 {
-	float TotalMass = 60.f;
+	float TotalMass = 0.f;
 
 	TArray<AActor*> OverlappingActors;
 	if (!PressurePlate) {return TotalMass;}
