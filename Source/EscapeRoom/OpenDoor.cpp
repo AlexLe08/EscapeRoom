@@ -35,7 +35,6 @@ void UOpenDoor::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("%s has OpenDoor component attached but no PressurePlate set!"), *GetOwner()->GetName() );
 	}
 	
-	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();										// Finds the PlayerController object and returns the pawn it possesses so we can set the player as the only object that can trigger OpenDoor
 }
 
 
@@ -92,6 +91,7 @@ float UOpenDoor::TotalMassOfActors() const																	// Returns the total 
 	float TotalMass = 60.f;
 
 	TArray<AActor*> OverlappingActors;
+	if (!PressurePlate) {return TotalMass;}
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	for (AActor* Actor : OverlappingActors)

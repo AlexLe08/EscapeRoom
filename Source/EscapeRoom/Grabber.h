@@ -28,7 +28,7 @@ private:
 	float Reach = 100.f;
 
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;					// We don't know whether the object will have a physics handle yet; hence null pointer
-	UInputComponent* InputComponent = nullptr;
+	UInputComponent* InputComponent = nullptr;							// Also good practice to ensure pointers don't access something random
 
 	void Grab();
 	void ReleaseGrab();
