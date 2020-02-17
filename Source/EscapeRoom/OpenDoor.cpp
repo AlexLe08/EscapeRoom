@@ -2,6 +2,7 @@
 
 
 #include "OpenDoor.h"
+#include "Components/AudioComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -29,14 +30,30 @@ void UOpenDoor::BeginPlay()
 	InitialYaw = GetOwner()->GetActorRotation().Yaw;														//Starting yaw in the world; it could be 0 it could be 270 etc
 	CurrentYaw = InitialYaw;
 	OpenAngle += InitialYaw;																			//Door turns by adding to the initial yaw over time, eventually rotating from its oroginal yaw by x degrees, which is set as an editable parameter in the editor
+	
+	FindPressurePlate();
+	FindAudioComponent();
+}
 
+void UOpenDoor::FindPressurePlate()
+{
 	if (!PressurePlate)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s has OpenDoor component attached but no PressurePlate set!"), *GetOwner()->GetName() );
 	}
-	
 }
 
+
+void UOpenDoor::FindAudioComponent()
+{
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+
+	if (!AudioComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Missing audio component"), *GetOwner()->GetName());
+	}
+
+}
 
 // Called every frame
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -74,6 +91,15 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	FRotator DoorRotation = GetOwner()->GetActorRotation();													// A rotator is created and assigned to be the actor's rotation at that moment
 	DoorRotation.Yaw = CurrentYaw;																			// The yaw is replaced with the new value from lerping
 	GetOwner()->SetActorRotation(DoorRotation);
+
+	CloseDoorSound = false;
+	if (!AudioComponent) {return;}
+	if (!OpenDoorSound)
+	{
+		AudioComponent->Play();
+		OpenDoorSound = true;
+	}
+
 }
 
 void UOpenDoor::CloseDoor(float DeltaTime)
@@ -83,7 +109,15 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 
 	FRotator DoorRotation = GetOwner()->GetActorRotation();													
 	DoorRotation.Yaw = CurrentYaw;		
-	GetOwner()->SetActorRotation(DoorRotation);												
+	GetOwner()->SetActorRotation(DoorRotation);	
+
+	OpenDoorSound = false;
+	if (!AudioComponent) {return;}	
+	if (!CloseDoorSound)
+	{
+		AudioComponent->Play();
+		CloseDoorSound = true;
+	}										
 }
 
 float UOpenDoor::TotalMassOfActors() const																	// Returns the total mass of all actors that overlap the pressure plate
@@ -97,7 +131,7 @@ float UOpenDoor::TotalMassOfActors() const																	// Returns the total 
 	for (AActor* Actor : OverlappingActors)
 	{
 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
-		// UE_LOG(LogTemp, Warning, TEXT("%s is on the pressure plate"), *Actor->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("%s is on the pressure plate"), *Actor->GetName());
 	}
 
 	return TotalMass;
