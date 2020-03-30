@@ -27,6 +27,9 @@ protected:
 private:
 	float Reach = 100.f;
 
+	UPROPERTY(EditAnywhere)
+	float DistanceFromPlayer = 0.f;
+
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;					// We don't know whether the object will have a physics handle yet; hence null pointer
 	UInputComponent* InputComponent = nullptr;							// Also good practice to ensure pointers don't access something random
 
@@ -40,4 +43,5 @@ private:
 	FVector GetLineTraceEnd() const;
 
 	FVector GetPlayerWorldPos() const;
+	
 };

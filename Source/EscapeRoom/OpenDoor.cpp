@@ -60,7 +60,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);											// Delta time is the time between frames being rendered
 
-	if (TotalMassOfActors() > MassToOpenDoor)
+	if (TotalMassOfActors() >= MassToOpenDoor)
 	{
 		OpenDoor(DeltaTime);
 		DoorLastOpened = GetWorld()->GetTimeSeconds();														// GetWorld()->GetTimeSeconds() returns time that has passed since game started
@@ -119,6 +119,23 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 		CloseDoorSound = true;
 	}										
 }
+
+// float UOpenDoor::TotalMassOfActors() const																	// Returns the total mass of all actors that overlap the pressure plate
+// {
+// 	float TotalMass = 0.f;
+
+// 	TArray<AActor*> OverlappingActors;
+// 	if (!PressurePlate) {return TotalMass;}
+// 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+
+// 	for (AActor* Actor : OverlappingActors)
+// 	{
+// 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+// 		UE_LOG(LogTemp, Warning, TEXT("%s is on the pressure plate"), *Actor->GetName());
+// 	}
+
+// 	return TotalMass;
+// }
 
 float UOpenDoor::TotalMassOfActors() const																	// Returns the total mass of all actors that overlap the pressure plate
 {
